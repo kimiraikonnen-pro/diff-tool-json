@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JSON Diff Tool</title>
+  <style>
+    body { font-family: sans-serif; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+    textarea { width: 100%; height: 200px; font-family: monospace; font-size: 13px; }
+    .row { display: flex; gap: 20px; }
+    .col { flex: 1; }
+    button { padding: 10px 20px; font-size: 15px; margin-top: 15px; cursor: pointer; }
+    #results { margin-top: 25px; padding: 15px; background: #f4f4f4; border-radius: 6px; white-space: pre-wrap; font-family: monospace; }
+  </style>
+</head>
+<body>
+  <h1>JSON Diff Tool</h1>
+  <p>Paste two JSON objects below and see what changed.</p>
+
+  <div class="row">
+    <div class="col">
+      <h3>Old</h3>
+      <textarea id="oldInput">{"timeout": 30}</textarea>
+    </div>
+    <div class="col">
+      <h3>New</h3>
+      <textarea id="newInput">{"timeout": 60}</textarea>
+    </div>
+  </div>
+
+  <button id="compareBtn">Compare</button>
+
+  <div id="results"></div>
+
+  <script>
+    document.getElementById("compareBtn").addEventListener("click", async () => {
+      const resultsDiv = document.getElementById("results");
+      resultsDiv.textContent = "Comparing...";
+
+      try {
+        const oldData = JSON.parse(document.getElementById("oldInput").value);
+        const newData = JSON.parse(document.getElementById("newInput").value);
+
+        const response = await fetch("/diff", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ old: oldData, new: newData })
+        });
+
+        const data = await response.json();
+
+        if (data.error) {
+          resultsDiv.textContent = "Error: " + data.error;
+        } else if (data.changes.length === 0) {
+          resultsDiv.textContent = "No differences found.";
+        } else {
+          resultsDiv.textContent = data.changes.join("\n");
+        }
+      } catch (err) {
+        resultsDiv.textContent = "Invalid JSON — check your syntax. (" + err.message + ")";
+      }
+    });
+  </script>
+</body>
+</html>

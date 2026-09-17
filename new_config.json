@@ -1,0 +1,9 @@
+{
+  "server": {
+    "timeout": 60,
+    "retries": 3
+  },
+  "debug": true,
+  "version": "2.0",
+  "tags": ["prod", "stable", "critical"]
+}
